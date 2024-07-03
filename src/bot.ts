@@ -16,7 +16,8 @@ export const stateMap = new Map();
 
 export let busy = true;
 
-export const channelIds: string[] = [];
+export let channelMap = new Map<string, string[]>();
+// export const channelIds: string[] = [];
 
 export const stateMap_setFocus = (
   chatId: string,
@@ -347,7 +348,10 @@ export const forwardMessage = async (
   messageId: number
 ) => {
   try {
-    const msg = await bot.forwardMessage(chatId, fromChatId, messageId);
+    const msg = await bot.forwardMessage(chatId, fromChatId, messageId, {
+      disable_notification: true,
+      protect_content: false
+    });
     return {
       messageId: msg.message_id,
       chatId: msg.chat ? msg.chat.id : null,
@@ -419,14 +423,13 @@ export const getMainMenuMessage = async (
   
 My channels:\n`;
 
-  channelIds.forEach((channelId) => {
+  let channels: string[] = channelMap.get(sessionId) ?? [];
+  channels.forEach((channelId) => {
     MESSAGE += "  👉  \t";
     MESSAGE += channelId;
     MESSAGE += "\n";
   });
 
-
-  console.log("getMainMenuMessage________________________", MESSAGE)
   return MESSAGE;
 };
 
@@ -568,6 +571,7 @@ export async function init() {
 
   bot.on("message", async (message: any) => {
     const msgType = message?.chat?.type;
+    console.log("message_______________", message);
     if (msgType === "private") {
       teleBot.procMessage(message);
     } else if (msgType === "group" || msgType === "supergroup") {
@@ -581,9 +585,11 @@ export async function init() {
       return;
     }
 
+    console.log("callback_query_______________");
     const option = JSON.parse(callbackQuery.data as string);
     let chatId = message.chat.id.toString();
 
+    console.log()
     executeCommand(chatId, message.message_id, callbackQuery.id, option);
   });
 

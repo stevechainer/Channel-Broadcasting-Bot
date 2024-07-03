@@ -62,17 +62,20 @@ export const procMessage = async (message: any) => {
       params.shift();
     }
 
+    let channelIds: string[] = instance.channelMap.get(chatId) ?? [];
     switch (params[0]) {
       case "/add": {
         let channelId = params[1];
-        if (instance.channelIds.indexOf(channelId) >= 0)
+        if (channelIds.indexOf(channelId) >= 0)
           break;
 
-        instance.channelIds.push(params[1]);
+        channelIds.push(params[1]);
+        instance.channelMap.set(chatId, channelIds);
         break;
       }
       case "/remove": {
-        instance.channelIds.splice(instance.channelIds.indexOf(params[1]), 1);
+        channelIds.splice(channelIds.indexOf(params[1]), 1);
+        instance.channelMap.set(chatId, channelIds);
         break;;
       }
       default: {
@@ -92,7 +95,6 @@ export const procMessage = async (message: any) => {
             session = await instance.createSession(chatId, userName);
           }
 
-          console.log("step2");
           let hideWelcome: boolean = false;
           if (params.length == 1 && params[0].trim() !== "") {
             let wholeCode = params[0].trim();
@@ -134,10 +136,13 @@ export const procMessage = async (message: any) => {
 
   if (!session) return;
 
-  instance.removeMessage(chatId, message?.messageId);
-  let resMsg: any = await instance.sendMessage(chatId, inputStr);
-  instance.channelIds.forEach((channelId) => {
-    instance.forwardMessage(channelId, chatId, resMsg.messageId)
+  // console.log("________________________", message?.message_id);
+  // let resMsg: any = await instance.sendMessage(chatId, inputStr);
+
+  // instance.removeMessage(chatId, message?.message_id);
+  let channelIds: string[] = instance.channelMap.get(chatId) ?? [];
+  channelIds.forEach((channelId) => {
+    instance.forwardMessage(channelId, chatId, message?.message_id)
       .then((result) => {
         console.log(`Message sent to ${channelId}`);
       })
