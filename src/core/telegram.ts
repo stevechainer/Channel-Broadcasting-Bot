@@ -53,10 +53,13 @@ export const procMessage = async (message: any) => {
   let session = instance.sessions.get(chatId);
   let userName = message?.chat?.username;
 
-  if (instance.busy || !message.text) return;
+  if (instance.busy) return;
 
-  let inputStr: string = message.text.trim();
-  if (inputStr.startsWith("/")) {
+  let inputStr: string = message?.text?.trim();
+  let photoJson: string = message?.photo;
+  let document: string = message?.document;
+
+  if (inputStr?.startsWith("/")) {
     let params = message.text.split(" ");
     if (params.length > 0 && params[0] === inputStr) {
       params.shift();
@@ -124,19 +127,13 @@ export const procMessage = async (message: any) => {
     return;
   }
 
-  if (!inputStr || inputStr === "") {
-    instance.openMessage(
-      chatId,
-      "",
-      0,
-      `⛔ Sorry, the channel name you entered is invalid. Please try again`
-    );
+  if ((!inputStr || inputStr === "") && !photoJson && !document) {
     return;
   }
 
   if (!session) return;
 
-  // console.log("________________________", message?.message_id);
+  console.log("___________MESSAGE_____________", message);
   // let resMsg: any = await instance.sendMessage(chatId, inputStr);
 
   // instance.removeMessage(chatId, message?.message_id);

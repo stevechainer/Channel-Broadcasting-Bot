@@ -571,7 +571,7 @@ export async function init() {
 
   bot.on("message", async (message: any) => {
     const msgType = message?.chat?.type;
-    console.log("message_______________", message);
+    console.log("message_______________1", message);
     if (msgType === "private") {
       teleBot.procMessage(message);
     } else if (msgType === "group" || msgType === "supergroup") {
